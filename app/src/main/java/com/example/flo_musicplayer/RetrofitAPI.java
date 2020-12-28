@@ -1,15 +1,16 @@
 package com.example.flo_musicplayer;
 
 
-import com.google.gson.JsonObject;
-
-import java.util.List;
+import com.example.flo_musicplayer.model.Post;
 
 import io.reactivex.Observable;
-import retrofit2.Call;
+import okhttp3.ResponseBody;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
-import retrofit2.http.Query;
+import retrofit2.http.Streaming;
+import retrofit2.http.Url;
 
 
 public interface RetrofitAPI {
@@ -19,6 +20,16 @@ public interface RetrofitAPI {
     @GET("song.json")
     Observable<Post> getSongData();
 
+    @Streaming
+    @GET
+    Observable<Response<ResponseBody>> getCoverImage(@Url String fileUrl);
+
+    @GET("/2020-flo/{imageName}")
+    void getImage(@Path("imageName") String imageName, Callback<Response> callback);
+
+    @Streaming
+    @GET
+    Observable<Response<ResponseBody>> getMusic(@Url String fileUrl);
 
 
 

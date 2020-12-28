@@ -2,25 +2,34 @@ package com.example.flo_musicplayer.view;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.flo_musicplayer.Post;
+import com.example.flo_musicplayer.model.Post;
 import com.example.flo_musicplayer.R;
 import com.example.flo_musicplayer.RetrofitAPI;
 import com.example.flo_musicplayer.interfaceCollection;
 import com.example.flo_musicplayer.presenter.MusicQueuePresenter;
 
 
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -32,6 +41,12 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
 
     TextView singerText,albumText,titleText;
     ImageButton playButton;
+    ImageView CoverImage;
+    SeekBar seekBar;
+
+    RetrofitAPI retrofitAPI;
+    Post MyPost;
+    boolean isPlaying;
 
     @SuppressLint("CheckResult")
     @Override
@@ -50,13 +65,13 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build();
 
-        RetrofitAPI retrofitAPI = retrofit.create(RetrofitAPI.class);
+        retrofitAPI = retrofit.create(RetrofitAPI.class);
         retrofitAPI.getSongData().subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<Post>() {
                     @Override
                     public void accept(Post post) throws Exception {
-                        Log.e("get SongData","success");
+                        Log.e("success","getSongData");
                         displayData(post);
                     }
                 });
@@ -92,7 +107,12 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
          */
     }
 
+
+
+
     private void setupView(){
+        isPlaying = false;
+
         singerText = findViewById(R.id.singer);
         albumText = findViewById(R.id.album);
         titleText = findViewById(R.id.title);
@@ -100,9 +120,39 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
         playButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-                MQPresenter.setLog("hi");
+                //MQPresenter.setLog("hi");
+                if(!isPlaying){
+                    playButton.setImageResource(R.drawable.sharp_pause_white_36);
+                    MQPresenter.resumeAudio();
+                }
+                else{
+                    playButton.setImageResource(R.drawable.sharp_play_arrow_white_36);
+                    MQPresenter.pauseAudio();
+                }
+                isPlaying = !isPlaying;
             }
         });
+        CoverImage = findViewById(R.id.coverImage);
+        seekBar = findViewById(R.id.SeekBar);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(fromUser){
+                    MQPresenter.setSeekBar(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
     }
     private void setupMVP(){
         //자동 타입 변환(promotion)
@@ -110,13 +160,76 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
     }
 
     private void displayData(Post post){
-        singerText.setText(post.getSinger());
-        albumText.setText(post.getAlbum());
-        titleText.setText(post.getTitle());
+
+        MyPost = post;
+
+        singerText.setText(MyPost.getSinger());
+        albumText.setText(MyPost.getAlbum());
+        titleText.setText(MyPost.getTitle());
+        int temp_duration = MyPost.getDuration()*1000;
+        seekBar.setMax(temp_duration);
+        MQPresenter.setDuration(temp_duration);
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request ImageRequest = new Request.Builder()
+                .url(MyPost.getImageURL())
+                .build();
+
+        client.newCall(ImageRequest).enqueue(new Callback(){
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("request fail","image");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Log.e("request success","image");
+
+                InputStream In = response.body().byteStream();
+                final Drawable drawable = Drawable.createFromStream(In,"");
+                runOnUiThread(new Runnable(){
+                    public void run(){
+                        CoverImage.setImageDrawable(drawable);
+                    }
+                });
+
+            }
+        });
+
+        MQPresenter.prepareAudio(MyPost.getFileURL());
+        MQPresenter.readyMusic();
+
+
     }
 
     @Override
+    public void updateSeekBar(){
+        seekBar.setProgress(MQPresenter.getSeekBarPosition());
+
+    }
+    @Override
+    public void notifyMusicDone(){
+        playButton.setImageResource(R.drawable.sharp_play_arrow_white_36);
+        isPlaying = false;
+        MQPresenter.setSeekBar(0);
+        runOnUiThread(new Runnable(){
+            public void run(){
+                MQPresenter.pauseAudio();
+                updateSeekBar();
+                MQPresenter.readyMusic();
+            }
+        });
+    }
+
+    public boolean isMusicPlaying(){
+        return isPlaying;
+    }
+
+
+    @Override
     public void Toast(String str){
+
         Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
     }
 
