@@ -22,6 +22,8 @@ public interface interfaceCollection {
         void updateSeekBar();
         boolean isMusicPlaying();
         void notifyMusicDone();
+        void checkLyricsPosition(int position);
+        void notifySplitLyrics();
 
     }
 

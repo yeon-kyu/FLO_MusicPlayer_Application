@@ -46,9 +46,11 @@ public class MusicQueuePresenter implements interfaceCollection.MusicQueueP {
                         MQView.notifyMusicDone();
                         break;
                     }
+                    MQView.checkLyricsPosition(position);
+
 
                     try {
-                        Thread.sleep(400);
+                        Thread.sleep(200);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -56,6 +58,7 @@ public class MusicQueuePresenter implements interfaceCollection.MusicQueueP {
 
             }
         });
+        MQView.notifySplitLyrics();
         timerThread.start();
     }
 

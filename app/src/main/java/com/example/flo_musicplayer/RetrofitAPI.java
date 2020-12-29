@@ -27,9 +27,6 @@ public interface RetrofitAPI {
     @GET("/2020-flo/{imageName}")
     void getImage(@Path("imageName") String imageName, Callback<Response> callback);
 
-    @Streaming
-    @GET
-    Observable<Response<ResponseBody>> getMusic(@Url String fileUrl);
 
 
 

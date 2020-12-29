@@ -2,6 +2,7 @@ package com.example.flo_musicplayer.view;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -40,6 +41,7 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
     interfaceCollection.MusicQueueP MQPresenter;
 
     TextView singerText,albumText,titleText;
+    TextView firstLine,secondLine,thirdLine;
     ImageButton playButton;
     ImageView CoverImage;
     SeekBar seekBar;
@@ -116,6 +118,10 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
         singerText = findViewById(R.id.singer);
         albumText = findViewById(R.id.album);
         titleText = findViewById(R.id.title);
+        firstLine = findViewById(R.id.first_lyrics);
+        secondLine = findViewById(R.id.second_lyrics);
+        thirdLine = findViewById(R.id.third_lyrics);
+
         playButton = findViewById(R.id.playButton);
         playButton.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -201,6 +207,12 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
         MQPresenter.readyMusic();
 
 
+
+    }
+
+    @Override
+    public void notifySplitLyrics(){
+        MyPost.splitLyrics();
     }
 
     @Override
@@ -220,6 +232,65 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
                 MQPresenter.readyMusic();
             }
         });
+    }
+    public void checkLyricsPosition(int pos){
+        //기본적으로 MusicQueuePresentation에서 생성한 스레드에서 동작
+        final int size = MyPost.getLyricsSize();
+        int cur = 0;
+        boolean Doneflag = false;
+        for(int i=0;i<size;i++){
+            int temp = MyPost.timeAndLyrics[i].getTime();
+            if(pos<temp){ //현재 seekbar의 위치가 탐색위치 temp보다 작을때
+                cur = i-1;
+                Log.e("currentt cur : ",cur+", "+pos+", "+temp);
+                Doneflag = true;
+                break;
+            }
+        }
+        if(!Doneflag){
+            cur = size;
+        }
+
+        boolean introflag = false;
+        if(cur==-1){
+            cur = 0;
+            introflag = true;
+        }
+        final int finalCur = cur;
+        final boolean finalIntroflag = introflag;
+        runOnUiThread(new Runnable(){
+            public void run(){
+
+                if(finalCur < size){
+                    if(finalIntroflag ==false){ //재생중인 가사 하이라이팅
+                        firstLine.setTextColor(Color.parseColor("#6666ff"));
+                        firstLine.setText(MyPost.timeAndLyrics[finalCur].getLy());
+                    }
+                    else{
+                        firstLine.setTextColor(Color.parseColor("#ffffff"));
+                        firstLine.setText(MyPost.timeAndLyrics[finalCur].getLy());
+                    }
+
+                }
+                else{
+                    firstLine.setText("");
+                }
+
+                if(finalCur +1<size) {
+                    secondLine.setText(MyPost.timeAndLyrics[finalCur + 1].getLy());
+                }
+                else{
+                    secondLine.setText("");
+                }
+                if(finalCur +2<size){
+                    thirdLine.setText(MyPost.timeAndLyrics[finalCur +2].getLy());
+                }
+                else{
+                    thirdLine.setText("");
+                }
+            }
+        });
+
     }
 
     public boolean isMusicPlaying(){
