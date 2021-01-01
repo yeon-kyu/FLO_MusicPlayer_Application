@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -14,6 +15,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.flo_musicplayer.model.MusicPlayerService;
 import com.example.flo_musicplayer.model.Post;
 import com.example.flo_musicplayer.R;
 import com.example.flo_musicplayer.RetrofitAPI;
@@ -23,7 +25,6 @@ import com.example.flo_musicplayer.presenter.MusicQueuePresenter;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
@@ -111,6 +112,18 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
          */
     }
 
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+        isPlaying = MusicPlayerService.getInstance().isPlaying();
+        if(isPlaying){
+            playButton.setImageResource(R.drawable.sharp_pause_white_36);
+        }
+        else{
+            playButton.setImageResource(R.drawable.sharp_play_arrow_white_36);
+        }
+    }
 
 
 
@@ -203,7 +216,7 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
         titleText.setText(MyPost.getTitle());
         int temp_duration = MyPost.getDuration()*1000;
         seekBar.setMax(temp_duration);
-        MQPresenter.setDuration(temp_duration);
+        MQPresenter.setTotalDuration(temp_duration);
 
         OkHttpClient client = new OkHttpClient();
 
@@ -276,6 +289,7 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
                 break;
             }
         }
+        //Log.e("currentt cur : ",cur+", "+pos);
         if(!Doneflag){
             cur = size;
         }
@@ -331,6 +345,13 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
     public void Toast(String str){
 
         Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onDestroy() { //앱을 닫을때 musicPlayerService 싱글톤 해제
+
+        super.onDestroy();
+        finish();
     }
 
 

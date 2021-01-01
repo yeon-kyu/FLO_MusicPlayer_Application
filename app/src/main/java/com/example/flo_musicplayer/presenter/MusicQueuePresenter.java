@@ -1,85 +1,41 @@
 package com.example.flo_musicplayer.presenter;
 
 import android.media.MediaPlayer;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.flo_musicplayer.interfaceCollection;
+import com.example.flo_musicplayer.model.MusicPlayerService;
 import com.example.flo_musicplayer.model.testModel;
 
 import java.io.IOException;
 
 public class MusicQueuePresenter implements interfaceCollection.MusicQueueP {
+
     private interfaceCollection.MusicQueueV MQView;
-    private testModel tModel;
 
-
-    MediaPlayer player;
-    Thread timerThread;
-    int position;
-    int duration;
 
     public MusicQueuePresenter(interfaceCollection.MusicQueueV v){
         this.MQView = v;
+        MusicPlayerService.getInstance().setMQPresenter(this);
+
     }
 
-    @Override
-    public void readyMusic(){
-        synchronized (this){
-            position = 0;
-        }
 
-        timerThread = new Thread(new Runnable(){
-            public void run(){
-                while(true){
-                    if(MQView.isMusicPlaying()){
-                        MQView.updateSeekBar();
-                    }
-                    synchronized (this){
-                        position = getSeekBarPosition();
-                    }
-                    if(position >= duration){
-                        synchronized (this){
-                            position = 0;
-                        }
-                        MQView.updateSeekBar();
-                        MQView.notifyMusicDone();
-                        break;
-                    }
-                    MQView.checkLyricsPosition(position);
-
-
-                    try {
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-            }
-        });
+    public void notifySplitLyrics(){
         MQView.notifySplitLyrics();
-        timerThread.start();
+    }
+    public void updateSeekBar(){
+        MQView.updateSeekBar();
+    }
+    public void notifyMusicDone(){
+        MQView.notifyMusicDone();
     }
 
-    @Override
-    public void setSeekBar(int position){
-        player.seekTo(position);
-        synchronized (this){
-            this.position = position;
-        }
-
-    }
-
-    @Override
-    public int getSeekBarPosition(){
-        return player.getCurrentPosition();
-    }
-
-    @Override
-    public void setDuration(int dur){
-        duration = dur;
-    }
+    public void checkLyricsPosition(int position){
+        MQView.checkLyricsPosition(position);
+  }
 
 
     public void setLog(String str){
@@ -87,61 +43,39 @@ public class MusicQueuePresenter implements interfaceCollection.MusicQueueP {
         MQView.Toast(str);
     }
 
-    public void prepareAudio(String url){
-        closePlayer();
-
-        player = new MediaPlayer();
-        try {
-            player.setDataSource(url);
-            player.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void prepareAudio(String Url) {
+        MusicPlayerService.getInstance().prepareAudio(Url);
     }
 
     @Override
     public void pauseAudio() {
-        if (player != null) {
-            player.pause();
-            position = player.getCurrentPosition();
-
-            Log.e("pause current position",player.getCurrentPosition()+"");
-            MQView.Toast("중지");
-        }
+        MusicPlayerService.getInstance().pauseAudio();
     }
+
+    @Override
     public void resumeAudio() {
-        if (player != null && !player.isPlaying()) {
-            player.seekTo(position);
-            player.start();
-
-            Log.e("resume current position",position+"");
-            MQView.Toast("재생");
-        }
+        MusicPlayerService.getInstance().resumeAudio();
     }
 
-//    @Override
-//    public void playAudio() {
-//
-//        player.start();
-//
-//        MQView.Toast("재생 시작");
-//
-//    }
-
-//    public void stopAudio() {
-//        if(player != null && player.isPlaying()){
-//            player.stop();
-//
-//            MQView.Toast("중지");
-//        }
-//    }
-
-
-    private void closePlayer() {
-        if (player != null) {
-            player.release();
-            player = null;
-        }
+    @Override
+    public void setSeekBar(int position) {
+        MusicPlayerService.getInstance().setSeekBar(position);
     }
+
+    @Override
+    public void setTotalDuration(int dur) {
+        MusicPlayerService.getInstance().setTotalDuration(dur);
+    }
+
+    @Override
+    public void readyMusic() {
+        MusicPlayerService.getInstance().readyMusic();
+    }
+
+    public int getSeekBarPosition(){
+        return MusicPlayerService.getInstance().getSeekBarPosition();
+    }
+
 
 }

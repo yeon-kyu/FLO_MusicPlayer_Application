@@ -1,20 +1,26 @@
 package com.example.flo_musicplayer;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import com.example.flo_musicplayer.model.MusicPlayerService;
+
 public interface interfaceCollection {
 
-    interface MusicQueueP{
+    interface MusicQueueP {
 
         void setLog(String str);
         void prepareAudio(String Url);
-        //void playAudio();
-        void pauseAudio();
         void resumeAudio();
+        void pauseAudio();
+        //void playAudio();
         //void stopAudio();
 
         void setSeekBar(int position);
         int getSeekBarPosition();
-        void setDuration(int dur);
+        void setTotalDuration(int dur);
         void readyMusic();
+
     }
 
     interface MusicQueueV{
@@ -25,6 +31,21 @@ public interface interfaceCollection {
         void checkLyricsPosition(int position);
         void notifySplitLyrics();
 
+    }
+    interface  FullLyricsP{
+        void setSeekBar(int position);
+        void resumeAudio();
+        void pauseAudio();
+        int getSeekBarPosition();
+        void readyMusic();
+    }
+    interface FullLyricsV{
+
+        void updateSeekBar();
+
+        void notifyMusicDone();
+
+        void checkLyricsPosition(int position);
     }
 
 }

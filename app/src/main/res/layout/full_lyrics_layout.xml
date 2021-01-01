@@ -13,8 +13,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginTop="20dp"
+            android:layout_below="@+id/BackButton"
             android:layout_marginLeft="20dp"
+            android:layout_marginBottom="40dp"
             >
             <TextView
                 android:id="@+id/titleText"
@@ -40,38 +41,36 @@
 
 
 
-            <Button
-                android:id="@+id/BackButton"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:foreground="@drawable/round_clear_white_36"
-                android:background="@color/black"
-                android:layout_marginTop="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_alignParentRight="true"
-                >
+        <Button
+            android:id="@+id/BackButton"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:foreground="@drawable/round_clear_white_36"
+            android:background="@color/black"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_alignParentRight="true">
 
-            </Button>
+        </Button>
 
-            <ToggleButton
-                android:id="@+id/toggleButton"
-                android:layout_width="60dp"
-                android:layout_height="50dp"
-                android:background="@drawable/toggle_image_selector"
-                android:textOn=""
-                android:textOff=""
-                android:layout_below="@+id/BackButton"
-                android:layout_alignParentRight="true"
-                android:layout_marginRight="15dp"
-                >
+        <ToggleButton
+            android:id="@+id/toggleButton"
+            android:layout_width="60dp"
+            android:layout_height="50dp"
+            android:background="@drawable/toggle_image_selector"
+            android:textOn=""
+            android:textOff=""
+            android:layout_below="@+id/BackButton"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="15dp">
 
-            </ToggleButton>
+        </ToggleButton>
 
         <TextView
             android:id="@+id/toggleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="seek on"
+            android:text="seek off"
             android:textColor="@color/white"
             android:layout_below="@+id/toggleButton"
             android:layout_marginRight="20dp"
