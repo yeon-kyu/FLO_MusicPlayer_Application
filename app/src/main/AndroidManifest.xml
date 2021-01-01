@@ -23,6 +23,9 @@
         <activity
             android:name="com.example.flo_musicplayer.view.MusicQueueActivity"
             android:theme="@style/AppTheme"/>
+        <activity
+            android:name="com.example.flo_musicplayer.view.FullLyricsActivity"
+            android:theme="@style/AppTheme"/>
     </application>
 
 </manifest>

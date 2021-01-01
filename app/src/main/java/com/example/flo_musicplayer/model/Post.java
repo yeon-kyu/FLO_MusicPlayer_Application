@@ -1,10 +1,12 @@
 package com.example.flo_musicplayer.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Post {
+public class Post implements Parcelable {
     //singer album title duration image file lyrics
     @SerializedName("singer")
     private String singer;
@@ -29,6 +31,29 @@ public class Post {
 
     public TimeAndLyrics[] timeAndLyrics;
     private int size;
+
+    protected Post(Parcel in) {
+        singer = in.readString();
+        album = in.readString();
+        title = in.readString();
+        duration = in.readInt();
+        imageURL = in.readString();
+        fileURL = in.readString();
+        lyrics = in.readString();
+        size = in.readInt();
+    }
+
+    public static final Creator<Post> CREATOR = new Creator<Post>() {
+        @Override
+        public Post createFromParcel(Parcel in) {
+            return new Post(in);
+        }
+
+        @Override
+        public Post[] newArray(int size) {
+            return new Post[size];
+        }
+    };
 
     public String getSinger(){
         return singer;
@@ -73,6 +98,23 @@ public class Post {
     }
     public int getLyricsSize(){
         return size;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(singer);
+        dest.writeString(album);
+        dest.writeString(title);
+        dest.writeInt(duration);
+        dest.writeString(imageURL);
+        dest.writeString(fileURL);
+        dest.writeString(lyrics);
+        dest.writeInt(size);
     }
 
     public class TimeAndLyrics{

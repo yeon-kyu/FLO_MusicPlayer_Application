@@ -2,6 +2,7 @@ package com.example.flo_musicplayer.view;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import com.example.flo_musicplayer.presenter.MusicQueuePresenter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
@@ -159,10 +161,37 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
             }
         });
 
+        firstLine.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                moveToFullLyricsActivity();
+            }
+        });
+        secondLine.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                moveToFullLyricsActivity();
+            }
+        });
+
+        thirdLine.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                moveToFullLyricsActivity();
+            }
+        });
     }
     private void setupMVP(){
         //자동 타입 변환(promotion)
         MQPresenter = new MusicQueuePresenter(this);
+    }
+
+    private void moveToFullLyricsActivity(){
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("PostData",MyPost);
+        Intent intent = new Intent(getApplicationContext(), FullLyricsActivity.class);
+        intent.putExtra("bundle",bundle);
+        startActivity(intent);
     }
 
     private void displayData(Post post){
@@ -242,7 +271,7 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
             int temp = MyPost.timeAndLyrics[i].getTime();
             if(pos<temp){ //현재 seekbar의 위치가 탐색위치 temp보다 작을때
                 cur = i-1;
-                Log.e("currentt cur : ",cur+", "+pos+", "+temp);
+                //Log.e("currentt cur : ",cur+", "+pos+", "+temp);
                 Doneflag = true;
                 break;
             }
