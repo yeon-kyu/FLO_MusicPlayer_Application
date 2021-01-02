@@ -15,6 +15,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
+
 import com.example.flo_musicplayer.model.MusicPlayerService;
 import com.example.flo_musicplayer.model.Post;
 import com.example.flo_musicplayer.R;
@@ -291,7 +293,7 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
         }
         //Log.e("currentt cur : ",cur+", "+pos);
         if(!Doneflag){
-            cur = size;
+            cur = size-1;
         }
 
         boolean introflag = false;
@@ -351,7 +353,9 @@ public class MusicQueueActivity extends Activity implements interfaceCollection.
     protected void onDestroy() { //앱을 닫을때 musicPlayerService 싱글톤 해제
 
         super.onDestroy();
-        finish();
+        MQPresenter = null; //memory leak 방지
+        MusicPlayerService.getInstance().destroy(); //memory leak 방지_싱글톤 객체 해제
+        System.exit(0);
     }
 
 

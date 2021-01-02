@@ -15,7 +15,7 @@ import java.io.IOException;
 
 public class MusicPlayerService {
 
-    private static final MusicPlayerService instance = new MusicPlayerService();
+    private static MusicPlayerService instance = new MusicPlayerService();
 
     private static final int MusicQueueStatus = 0;
     private static final int FullLyricsStatus = 1;
@@ -183,6 +183,16 @@ public class MusicPlayerService {
         }
         else
             return player.isPlaying();
+    }
+
+    public void destroy(){
+        MQPresenter = null;
+        timerThread.interrupt();
+        try {
+            instance.finalize();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
     }
 
 }

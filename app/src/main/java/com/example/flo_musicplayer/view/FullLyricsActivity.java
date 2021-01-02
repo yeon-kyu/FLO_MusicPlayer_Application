@@ -32,6 +32,8 @@ public class FullLyricsActivity extends Activity implements interfaceCollection.
     ToggleButton PlayButton,toggleButton;
     Button backButton;
 
+    TextView[] LyricsTextView;
+
     private LinearLayout textContainer;
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -39,7 +41,6 @@ public class FullLyricsActivity extends Activity implements interfaceCollection.
         setContentView(R.layout.full_lyrics_layout);
         MyPost = getIntent().getBundleExtra("bundle").getParcelable("PostData");
         Log.e("getIntent Test",MyPost.getTitle());
-        Toast.makeText(this, MyPost.getTitle(), Toast.LENGTH_SHORT).show();
 
         setupMVP();
         setupView();
@@ -62,18 +63,15 @@ public class FullLyricsActivity extends Activity implements interfaceCollection.
                 if (isChecked) {
                     // The toggle is enabled
                     toggleText.setText("seek on");
+                    Toast.makeText(FullLyricsActivity.this, "가사를 터치한 구간부터 재생합니다", Toast.LENGTH_SHORT).show();
                 } else {
                     // The toggle is disabled
                     toggleText.setText("seek off");
                 }
             }
         });
-        if(toggleButton.isEnabled()){
-            toggleText.setText("seek off");
-        }
-        else{
-            toggleText.setText("seek on");
-        }
+        toggleText.setText("seek off");
+        toggleButton.setChecked(false);
 
         seekBar = findViewById(R.id.SeekBar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -123,29 +121,42 @@ public class FullLyricsActivity extends Activity implements interfaceCollection.
             }
         });
 
-        displayLyrics();
+        showLyrics();
+        setLyricsListener();
     }
 
-    private void displayLyrics(){
+    private void showLyrics(){
         textContainer = findViewById(R.id.lyrics_textLayout);
         MyPost.splitLyrics();
         int size = MyPost.getLyricsSize();
         Log.e("Lyrics Size : ",size+"");
-        for(int i=0;i<size;i++){
-            String temp=MyPost.timeAndLyrics[i].getLy();
-            makeTextView(temp);
-        }
-    }
-    private void makeTextView(String str){
-        TextView tempView = new TextView(this);
-        tempView.setText(str);
-        tempView.setTextSize(18);
-        tempView.setTextColor(Color.WHITE);
 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.gravity = Gravity.CENTER;
-        tempView.setLayoutParams(lp);
-        textContainer.addView(tempView);
+        LyricsTextView = new TextView[size];
+        for(int i=0;i<size;i++){
+            LyricsTextView[i] = new TextView(this);
+            String str=MyPost.timeAndLyrics[i].getLy();
+            LyricsTextView[i].setText(str);
+            LyricsTextView[i].setTextSize(18);
+            LyricsTextView[i].setTextColor(Color.WHITE);
+
+            LyricsTextView[i].setLayoutParams(lp);
+            textContainer.addView(LyricsTextView[i]);
+        }
+    }
+    private void setLyricsListener(){
+        int size = MyPost.getLyricsSize();
+        for(int i=0;i<size;i++){
+            final int cur = i;
+            LyricsTextView[i].setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View view){
+                    if(toggleButton.isChecked())
+                        FLPresenter.setSeekBar(MyPost.timeAndLyrics[cur].getTime());
+                }
+            });
+        }
     }
 
     public void updateSeekBar(){
@@ -164,16 +175,69 @@ public class FullLyricsActivity extends Activity implements interfaceCollection.
     }
 
     @Override
-    public void checkLyricsPosition(int position) {
+    public void checkLyricsPosition(int pos) {
         //TODO
+        //기본적으로 MusicQueuePresentation에서 생성한 스레드에서 동작
+        final int size = MyPost.getLyricsSize();
+        int cur = 0;
+        boolean Doneflag = false;
+        for(int i=0;i<size;i++){
+            int temp = MyPost.timeAndLyrics[i].getTime();
+            if(pos<temp){ //현재 seekbar의 위치가 탐색위치 temp보다 작을때
+                cur = i-1;
+                //Log.e("currentt cur : ",cur+", "+pos+", "+temp);
+                Doneflag = true;
+                break;
+            }
+        }
+        //Log.e("currentt cur : ",cur+", "+pos);
+        if(!Doneflag){
+            cur = size-1;
+        }
+
+        boolean introflag = false;
+        if(cur==-1){
+            cur = 0;
+            introflag = true;
+        }
+        final int finalCur = cur;
+        final boolean finalIntroflag = introflag;
+
+        runOnUiThread(new Runnable(){
+            public void run(){
+                setAllLyricsWhite();
+                if(finalCur < size){//재생중인 가사 하이라이팅
+
+                    if(finalIntroflag ==false){ //초반 intro는 지났을때
+                        LyricsTextView[finalCur].setTextColor(Color.parseColor("#6666ff"));
+                    }
+                    else{//가사 전에 초반 연주중
+
+                    }
+
+                }
+                else{ //가사 다 끝나고 후반 연주중
+
+                }
+
+
+            }
+        });
+    }
+
+    private void setAllLyricsWhite(){
+        int size = MyPost.getLyricsSize();
+        for(int i=0;i<size;i++){
+            LyricsTextView[i].setTextColor(Color.parseColor("#ffffff"));
+        }
     }
 
 
     @Override
     protected void onDestroy() {
-
-        super.onDestroy();
         MusicPlayerService.getInstance().freeFLPresenter();
+        super.onDestroy();
+
     }
 
 }
